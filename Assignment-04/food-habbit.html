@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Indian Map with States</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+  </head>
+  <body>
+    <div id="map-container"></div>
+    <script>
+    
+    var jsn = {"Andaman & Nicobar Island": {"fish": 0, "chicken": 0, "egg": 0, "population": 0, "total": 0}, "Andhra Pradesh": {"fish": 90, "chicken": 95, "egg": 96, "population": 53, "total": 281}, "Arunachal Pradesh": {"fish": 99, "chicken": 99, "egg": 98, "population": 1.5, "total": 296}, "Assam": {"fish": 99, "chicken": 98, "egg": 98, "population": 36, "total": 295}, "Bihar": {"fish": 85, "chicken": 82, "egg": 82, "population": 126, "total": 249}, "Chhattisgarh": {"fish": 81, "chicken": 81, "egg": 85, "population": 30, "total": 247}, "Delhi": {"fish": 50, "chicken": 62, "egg": 71, "population": 21, "total": 183}, "Goa": {"fish": 96, "chicken": 94, "egg": 95, "population": 1.5, "total": 285}, "Gujarat": {"fish": 35, "chicken": 39, "egg": 40, "population": 71, "total": 114}, "Haryana": {"fish": 15, "chicken": 23, "egg": 32, "population": 30, "total": 70}, "Himachal Pradesh": {"fish": 32, "chicken": 50, "egg": 56, "population": 7, "total": 138}, "Jammu & Kasmir": {"fish": 85, "chicken": 84, "egg": 74, "population": 13, "total": 243}, "Jharkhand": {"fish": 93, "chicken": 92, "egg": 92, "population": 39, "total": 277}, "Karnataka": {"fish": 70, "chicken": 77, "egg": 83, "population": 67, "total": 230}, "Kerala": {"fish": 94, "chicken": 96, "egg": 97, "population": 36, "total": 287}, "Lakshadweep": {"fish": 0, "chicken": 0, "egg": 0, "population": 0, "total": 0}, "Madhya Pradesh": {"fish": 40, "chicken": 42, "egg": 50, "population": 86, "total": 132}, "Maharashtra": {"fish": 64, "chicken": 72, "egg": 75, "population": 126, "total": 211}, "Manipur": {"fish": 99, "chicken": 96, "egg": 97, "population": 3, "total": 292}, "Meghalaya": {"fish": 98, "chicken": 98, "egg": 97, "population": 3, "total": 293}, "Mizoram": {"fish": 96, "chicken": 99, "egg": 99, "population": 1.2, "total": 294}, "Nagaland": {"fish": 98, "chicken": 99, "egg": 99, "population": 2, "total": 296}, "Orissa": {"fish": 94, "chicken": 88, "egg": 87, "population": 46, "total": 269}, "Punjab": {"fish": 17, "chicken": 33, "egg": 41, "population": 31, "total": 91}, "Rajasthan": {"fish": 20, "chicken": 25, "egg": 34, "population": 81, "total": 79}, "Sikkim": {"fish": 90, "chicken": 90, "egg": 89, "population": 0.7, "total": 269}, "Tamil Nadu": {"fish": 92, "chicken": 92, "egg": 95, "population": 77, "total": 279}, "Telangana": {"fish": 85, "chicken": 94, "egg": 95, "population": 38, "total": 274}, "Tripura": {"fish": 97, "chicken": 96, "egg": 99, "population": 4, "total": 292}, "Uttar Pradesh": {"fish": 61, "chicken": 53, "egg": 51, "population": 235, "total": 165}, "Uttaranchal": {"fish": 58, "chicken": 68, "egg": 74, "population": 11, "total": 200}, "West Bengal": {"fish": 98, "chicken": 97, "egg": 96, "population": 99, "total": 291}};
+
+
+    var rad = [];
+    for (var key in jsn) {
+      // console.log(key);
+      rad.push(jsn[key]['total']*jsn[key]['population'])
+    }
+    rad.sort(function(a, b){return a - b})
+    
+    const min = rad[2];
+    const max = rad[rad.length -1];
+    console.log(min,max)
+
+    var radii_scale = d3.scaleLinear()
+    .domain([min,max])
+    .range([25,80])
+
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    const state_color = d3.scaleLinear()
+    .domain([20,60,100])
+    .range(["#004f00","#ffff8c","#c40600"])
+      // Set up container and SVG elements
+      const container = d3.select("#map-container");
+
+      const width = 1200;
+      const height = 1500;
+      const svg = container.append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+
+
+      // Load Indian map data
+      d3.json("data/full_data-1.json")
+      .then(function(data) {
+
+      	const projection = d3.geoAlbers()
+  .center([0, 30])
+  .rotate([-80, 0])
+  .scale(2000)
+  .translate([width / 2, height / 2]);
+
+        // Create path generator
+        const path = d3.geoPath()
+        .projection(projection);
+
+
+        // console.log(path.centroid(data.features[2]))
+
+        var namedata = data.features[14];
+
+        console.log(namedata.id);
+
+        console.log(namedata.geometry.coordinates[0].length);
+        console.log(state_color(99))
+
+        // Bind data to paths
+        const paths = svg.selectAll("path")
+            .data(data.features)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .attr('fill', d => state_color((jsn[d.id].fish+jsn[d.id].chicken+jsn[d.id].egg)/3))
+            .style("stroke", "#000")
+            .style("stroke-width", .5);
+
+
+    var color_scale = d3.scaleOrdinal(["#76076c", "#1557B4", "#FB8503"])
+
+
+    var pie = d3.pie()
+      .value(function(d) { return d; })
+      .sort(null);
+
+    // Set up the arc generator
+    
+
+      
+data['features'].forEach(function(d, i) {
+      var arc = d3.arc()
+      .innerRadius(1)
+      // .outerRadius(Math.min(width, height) / 2 - 30)
+      .outerRadius(radii_scale((jsn[d.id].total)*(jsn[d.id].population)))
+      // .padAngle(0.1)
+      .cornerRadius(10)
+      // .padRadius()
+
+      ;
+
+      // console.log(d.id, (jsn[d.id].total)*(jsn[d.id].population)/500)
+
+
+      const projection1 = d3.geoAlbers()
+        .center([0, 30])
+        .rotate([-80, 0])
+        .scale(2000)
+        .translate([width / 2, height / 2]);
+
+        // Create path generator
+        const path1 = d3.geoPath()
+        .projection(projection1);
+      var x = path1.centroid(d)[0];
+      var y = path1.centroid(d)[1];
+      var g = svg.append("g")
+        .attr("transform", d => "translate(" +  x + "," + y + ")");
+        
+
+      // Generate the pie chart path
+      var path = g.selectAll("path")
+        .data(pie([jsn[d.id].fish, jsn[d.id].chicken, jsn[d.id].egg ]))
+        .enter()
+        .append("path")
+        .attr("d", arc)
+        .attr('fill', function(d,i){return color_scale(i)})
+        .style("stroke", "white")
+        .style("stroke-width", 1.5)
+        .attr('fill-opacity',.8)
+        // .attr("fill", function(d) { return color(d.data); })
+        // .attr("transform", function(d) { return "translate(" +  arc.centroid(d)[0] + "," + arc.centroid(d)[1] + ")"; })
+        // ;
+
+
+      // Add text labels to the pie chart
+      var text = g.selectAll("text")
+        .data(pie([jsn[d.id].fish, jsn[d.id].chicken, jsn[d.id].egg ]))
+        .enter()
+        .append("text")
+        .attr("transform", function(d) { return "translate(" +  arc.centroid(d)[0] + "," + arc.centroid(d)[1] + ")"; })
+        // .attr("dy", ".35em")
+        .attr('text-anchor', 'middle')
+        .attr('alignment-baseline', 'central')
+        .attr('font-size', 12)
+        .attr('fill',"white")
+        .text(function(d) { return d.data; });
+});
+
+
+
+
+      });
+
+
+
+
+
+
+    </script>
+  </body>
+</html>
+
